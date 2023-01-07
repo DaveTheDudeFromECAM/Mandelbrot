@@ -52,17 +52,6 @@ const (
 	imgWidth   = 800
 	imgHeight  = 600
 	pixelTotal = imgWidth * imgHeight
-
-	maxIter = 50
-	samples = 100
-
-	numBlocks  = 64
-	numThreads = 32
-
-	ratio = float64(imgWidth) / float64(imgHeight)
-
-	showProgress = true
-	closeOnEnd   = false
 )
 
 // object Mandelbrot
@@ -91,7 +80,7 @@ func getMandelbrot(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, mandelbrot)
 	const (
 		xmin, ymin, xmax, ymax = -2, -2, +2, +2
-		width, height          = 1024, 1024
+		width, height          = 6000, 5000
 	)
 
 	img := image.NewRGBA(image.Rect(0, 0, width, height))
@@ -117,6 +106,8 @@ func getMandelbrot(c *gin.Context) {
 	png.Encode(f, img)
 }
 
+/*
+//Geaysacel version
 func makemandelbrot(z complex128) color.Color {
 	const iterations = 30
 	const contrast = 15
@@ -129,4 +120,35 @@ func makemandelbrot(z complex128) color.Color {
 		}
 	}
 	return color.Black
+}
+*/
+
+func makemandelbrot(z complex128) color.Color {
+	const iterations = 50
+	const contrast = 15
+
+	var v complex128
+	for n := uint16(0); n < iterations; n++ {
+		v = v*v + z
+		if cmplx.Abs(v) > 2 {
+			// Use the number of iterations as an index into a color palette to
+			// determine the color to return.
+			return colorPalette[int(n)%len(colorPalette)]
+
+		}
+	}
+	return color.Black
+}
+
+// colorPalette is a slice of colors to use as a color palette.
+var colorPalette = []color.Color{
+	color.RGBA{66, 30, 15, 255},    // Dark brown
+	color.RGBA{25, 7, 26, 255},     // Dark purple
+	color.RGBA{9, 1, 47, 255},      // Deep blue
+	color.RGBA{4, 4, 73, 255},      // Dark blue
+	color.RGBA{0, 7, 100, 255},     // Blue
+	color.RGBA{12, 44, 138, 255},   // Light blue
+	color.RGBA{24, 82, 177, 255},   // Sky blue
+	color.RGBA{57, 125, 209, 255},  // Light sky blue
+	color.RGBA{134, 181, 229, 255}, // Very light blue
 }
