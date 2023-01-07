@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"image"
 	"image/color"
+	"image/png"
 	"io"
 	"log"
 	"math"
@@ -71,8 +72,8 @@ const (
 
 	ratio = float64(imgWidth) / float64(imgHeight)
 
-	showProgress = true
-	closeOnEnd   = false
+	showProgress = false
+	closeOnEnd   = true
 )
 
 var (
@@ -93,7 +94,9 @@ func main() {
 }
 func getImage(c *gin.Context) {
 	// Read the image file and send it back as the response
-	img, err := os.Open("images/test.png")
+	// pixelgl.Run(run)
+
+	img, err := os.Open("mandelbrot.png")
 	if err != nil {
 		c.String(http.StatusInternalServerError, "Error reading image file")
 		return
@@ -122,7 +125,7 @@ func postMandelbrot(c *gin.Context) {
 	// Add new constants to the mandelbrot.
 	mandelbrot = newConstants
 	c.IndentedJSON(http.StatusCreated, newConstants)
-	// pixelgl.Run(run)
+	//
 }
 
 func run() {
@@ -130,10 +133,10 @@ func run() {
 	pixelCount = 0
 	img = image.NewRGBA(image.Rect(0, 0, imgWidth, imgHeight))
 	cfg := pixelgl.WindowConfig{
-		Title:  "Parallel Mandelbrot in Go",
-		Bounds: pixel.R(0, 0, imgWidth, imgHeight),
-		VSync:  true,
-		// Invisible: true,
+		Title:     "Parallel Mandelbrot in Go",
+		Bounds:    pixel.R(0, 0, imgWidth, imgHeight),
+		VSync:     true,
+		Invisible: true,
 	}
 
 	win, err := pixelgl.NewWindow(cfg)
@@ -145,6 +148,14 @@ func run() {
 	workBuffer := make(chan WorkItem, numBlocks)
 	threadBuffer := make(chan bool, numThreads)
 	drawBuffer := make(chan Pix, pixelTotal)
+
+	// Create a new file and write the image to it.
+	f, err := os.Create("mandelbrot.png")
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+	//
 
 	workBufferInit(workBuffer)
 	go workersInit(drawBuffer, workBuffer, threadBuffer)
@@ -164,6 +175,10 @@ func run() {
 			end := time.Now()
 			fmt.Println("\nFinished with time = ", end.Sub(start))
 			pixelCount++
+
+			//
+			png.Encode(f, img)
+			//
 
 			if closeOnEnd {
 				break
