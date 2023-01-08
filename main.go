@@ -9,9 +9,8 @@ import (
 	"os"
 	"strconv"
 	"sync"
-	"time" //Time taken to generate the set
+	"time"
 
-	//"math/rand"
 	"github.com/gin-gonic/gin"
 )
 
@@ -24,16 +23,16 @@ func main() {
 
 func getMandelbrot(c *gin.Context) {
 
-	// Get the parameters from the request.
+	// parameters from the request
+	iterations := c.Query("iterations")
+	height := c.Query("height")
+	width := c.Query("width")
 	xmin := c.Query("xmin")
 	xmax := c.Query("xmax")
 	ymin := c.Query("ymin")
 	ymax := c.Query("ymax")
-	iterations := c.Query("iterations")
-	width := c.Query("width")
-	height := c.Query("height")
 
-	// Convert the parameters to the appropriate types.
+	// type conversion
 	widthInt, err := strconv.Atoi(width)
 	heightInt, err := strconv.Atoi(height)
 	xminFloat, err := strconv.ParseFloat(xmin, 64)
@@ -42,40 +41,52 @@ func getMandelbrot(c *gin.Context) {
 	ymaxFloat, err := strconv.ParseFloat(ymax, 64)
 	iterationsInt, err := strconv.Atoi(iterations)
 
-	// Use the parameters to generate the Mandelbrot set.
+	//
 	img := image.NewRGBA(image.Rect(0, 0, widthInt, heightInt))
 	startTime := time.Now()
+
+	// counter for number of goroutines/tasks
 	var wg sync.WaitGroup
+
 	for py := 0; py < heightInt; py++ {
 		y := float64(py)/float64(heightInt)*(ymaxFloat-yminFloat) + yminFloat
 		wg.Add(1)
+
+		// goroutine for each row
 		go func(py int, y float64) {
 			defer wg.Done()
+
+			// each worker computes his row,pixel by pixel
 			for px := 0; px < widthInt; px++ {
 				x := float64(px)/float64(widthInt)*(xmaxFloat-xminFloat) + xminFloat
 				z := complex(x, y)
-				// Image point (px, py) represents complex value z.
-				img.Set(px, py, makemandelbrot(z, iterationsInt))
+
+				// sets color of a pixel according to computation
+				img.Set(px, py, getColor(z, iterationsInt))
 			}
 		}(py, y)
 	}
+
+	// waint untill all routines are done
 	wg.Wait()
 	endTime := time.Now()
+	elapsedTime := endTime.Sub(startTime)
+
+	// saves mandelbot set to a file
 	f, err := os.Create("mandelbrot.png")
 	if err != nil {
 		panic(err)
 	}
 	png.Encode(f, img)
-	elapsedTime := endTime.Sub(startTime)
+
+	// sends PNG path and computing duration to frontend
 	c.JSON(http.StatusOK, ImageResponse{
 		ImagePath: "mandelbrot.png",
 		Duration:  elapsedTime,
 	})
 }
 
-func makemandelbrot(z complex128, iterations int) color.Color {
-	//const iterations = 15
-	const contrast = 255
+func getColor(z complex128, iterations int) color.Color {
 
 	var v complex128
 	for n := int(0); n < iterations; n++ {
