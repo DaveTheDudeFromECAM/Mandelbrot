@@ -8,6 +8,7 @@ import (
 	"math/cmplx"
 	"net/http"
 	"os"
+	"strconv"
 	"sync"
 	"time" //Time taken to generate the set
 
@@ -81,26 +82,64 @@ func main() {
 }
 
 func getMandelbrot(c *gin.Context) {
-	//c.IndentedJSON(http.StatusOK, mandelbrot)
-	const (
-		xmin, ymin, xmax, ymax = -2, -2, +2, +2
-		width, height          = 1000, 1000
-	)
+
+	// Get the parameters from the request.
+	xmin := c.Query("xmin")
+	xmax := c.Query("xmax")
+	ymin := c.Query("ymin")
+	ymax := c.Query("ymax")
+	iterations := c.Query("iterations")
+	width := c.Query("width")
+	height := c.Query("height")
+
+	// Convert the parameters to the appropriate types.
+	widthInt, err := strconv.Atoi(width)
+	if err != nil {
+		// Handle the error.
+	}
+	heightInt, err := strconv.Atoi(height)
+	if err != nil {
+		// Handle the error.
+	}
+	xminFloat, err := strconv.ParseFloat(xmin, 64)
+	if err != nil {
+		// Handle the error.
+	}
+	xmaxFloat, err := strconv.ParseFloat(xmax, 64)
+	if err != nil {
+		// Handle the error.
+	}
+	yminFloat, err := strconv.ParseFloat(ymin, 64)
+	if err != nil {
+		// Handle the error.
+	}
+	ymaxFloat, err := strconv.ParseFloat(ymax, 64)
+	if err != nil {
+		// Handle the error.
+	}
+	iterationsInt, err := strconv.Atoi(iterations)
+	if err != nil {
+		// Handle the error.
+	}
+
+	// Use the parameters to generate the Mandelbrot set.
+	//const width, height = 1000, 1000
+	img := image.NewRGBA(image.Rect(0, 0, widthInt, heightInt))
 	startTime := time.Now()
-	img := image.NewRGBA(image.Rect(0, 0, width, height))
 	var wg sync.WaitGroup
-	for py := 0; py < height; py++ {
-		y := float64(py)/height*(ymax-ymin) + ymin
+	for py := 0; py < heightInt; py++ {
+		y := float64(py)/float64(heightInt)*(ymaxFloat-yminFloat) + yminFloat
 		wg.Add(1)
 		go func(py int, y float64) {
 			defer wg.Done()
-			for px := 0; px < width; px++ {
-				x := float64(px)/width*(xmax-xmin) + xmin
+			for px := 0; px < widthInt; px++ {
+				x := float64(px)/float64(widthInt)*(xmaxFloat-xminFloat) + xminFloat
 				z := complex(x, y)
 				// Image point (px, py) represents complex value z.
-				img.Set(px, py, makemandelbrot(z))
+				img.Set(px, py, makemandelbrot(z, iterationsInt))
 			}
 		}(py, y)
+
 	}
 	wg.Wait()
 	endTime := time.Now()
@@ -135,12 +174,12 @@ func makemandelbrot(z complex128) color.Color {
 }
 */
 
-func makemandelbrot(z complex128) color.Color {
-	const iterations = 15
+func makemandelbrot(z complex128, iterations int) color.Color {
+	//const iterations = 15
 	const contrast = 255
 
 	var v complex128
-	for n := uint16(0); n < iterations; n++ {
+	for n := int(0); n < iterations; n++ {
 		v = v*v + z
 		if cmplx.Abs(v) > 2 {
 			// Use the number of iterations as an index into a color palette to
