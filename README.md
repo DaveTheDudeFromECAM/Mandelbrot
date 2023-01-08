@@ -13,9 +13,9 @@ The server also uses goroutines to parallelize the computation of the Mandelbrot
 2. Clone this repository to your local machine.
 3. In the root directory of the repository, run go build to build the executable.
 4. Run the executable using :
-'''
+```
 go run main.go
-'''
+```
 The server responds to http request with the following parameters/
 
 -iterations: the maximum number of iterations to use when computing the Mandelbrot set (default: 256)
