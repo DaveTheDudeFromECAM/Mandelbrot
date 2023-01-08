@@ -73,23 +73,6 @@ func getMandelbrot(c *gin.Context) {
 	})
 }
 
-/*
-//Geaysacel version
-func makemandelbrot(z complex128) color.Color {
-	const iterations = 30
-	const contrast = 15
-
-	var v complex128
-	for n := uint8(0); n < iterations; n++ {
-		v = v*v + z
-		if cmplx.Abs(v) > 2 {
-			return color.Gray{255 - contrast*n}
-		}
-	}
-	return color.Black
-}
-*/
-
 func makemandelbrot(z complex128, iterations int) color.Color {
 	//const iterations = 15
 	const contrast = 255
