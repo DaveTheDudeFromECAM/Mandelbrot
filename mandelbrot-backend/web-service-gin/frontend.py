@@ -1,12 +1,14 @@
 import streamlit as st
 import requests
 
+st.sidebar.title("Mandelbrot generation settings")
+
 # Add sliders to adjust the parameters of the Mandelbrot set.
-xmin = st.slider("xmin", -2, 2, -2, 1)
-xmax = st.slider("xmax", -2, 2, 2, 1)
-ymin = st.slider("ymin", -2, 2, -2, 1)
-ymax = st.slider("ymax", -2, 2, 2, 1)
-iterations = st.slider("iterations", 50, 1000, 200, 1)
+xmin = st.sidebar.slider("xmin", -2, 2, -2, 1)
+xmax = st.sidebar.slider("xmax", -2, 2, 2, 1)
+ymin = st.sidebar.slider("ymin", -2, 2, -2, 1)
+ymax = st.sidebar.slider("ymax", -2, 2, 2, 1)
+iterations = st.sidebar.slider("iterations", 50, 1000, 200, 1)
 
 #@st.cache
 def get_image_path():
