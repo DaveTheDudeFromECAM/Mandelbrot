@@ -1,2 +1,2 @@
 # Mandelbrot
-Mandelbrot full stack implementation using Go &amp; Streamlit
+Mandelbrot generatro in full stack implementation using Go for the backend & Streamlit with pythonn for frontend.
