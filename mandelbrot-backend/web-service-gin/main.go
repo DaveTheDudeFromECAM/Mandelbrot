@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt" //console log
 	"image"
 	"image/color"
 	"image/png"
@@ -16,68 +15,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-/*
-type Pix struct {
-	x  int
-	y  int
-	cr uint8
-	cg uint8
-	cb uint8
-}
-
-type WorkItem struct {
-	initialX int
-	finalX   int
-	initialY int
-	finalY   int
-}
-
-// Mandelbrot class struct.
-type Mandelbrot struct {
-	ID           string  `json:"id"`
-	PosX         float32 `json:"posX"`
-	PosY         float32 `json:"posY"`
-	Height       float32 `json:"height"`
-	ImgWidth     float32 `json:"imgWidth"`
-	ImgHeight    float32 `json:"imgHeight"`
-	MaxIter      int     `json:"maxIter"`
-	Samples      int     `json:"samples"`
-	NumBlocks    int     `json:"numBlocks"`
-	NumThreads   int     `json:"numThreads"`
-	ShowProgress bool    `json:"showProgress"`
-	CloseOnEnd   bool    `json:"closeOnEnd"`
-}
-
-const (
-	posX   = -2
-	posY   = -1.2
-	height = 2.5
-
-	imgWidth   = 800
-	imgHeight  = 600
-	pixelTotal = imgWidth * imgHeight
-)
-
-// object Mandelbrot
-var mandelbrot = Mandelbrot{
-	PosX: -2, PosY: -1.2, Height: 2.5, ImgWidth: 1024, ImgHeight: 1024, MaxIter: 1000, Samples: 200, NumBlocks: 64, NumThreads: 16, ShowProgress: true, CloseOnEnd: false,
-}
-
-var (
-	img        *image.RGBA
-	pixelCount int
-)
-*/
-
 // router
 func main() {
-
 	router := gin.Default()
-
 	router.GET("/mandelbrot", getMandelbrot)
-	// router.GET("/albums/:id", getAlbumByID)
-	// router.POST("/albums", postAlbums)
-
 	router.Run("localhost:8001")
 }
 
@@ -94,36 +35,14 @@ func getMandelbrot(c *gin.Context) {
 
 	// Convert the parameters to the appropriate types.
 	widthInt, err := strconv.Atoi(width)
-	if err != nil {
-		// Handle the error.
-	}
 	heightInt, err := strconv.Atoi(height)
-	if err != nil {
-		// Handle the error.
-	}
 	xminFloat, err := strconv.ParseFloat(xmin, 64)
-	if err != nil {
-		// Handle the error.
-	}
 	xmaxFloat, err := strconv.ParseFloat(xmax, 64)
-	if err != nil {
-		// Handle the error.
-	}
 	yminFloat, err := strconv.ParseFloat(ymin, 64)
-	if err != nil {
-		// Handle the error.
-	}
 	ymaxFloat, err := strconv.ParseFloat(ymax, 64)
-	if err != nil {
-		// Handle the error.
-	}
 	iterationsInt, err := strconv.Atoi(iterations)
-	if err != nil {
-		// Handle the error.
-	}
 
 	// Use the parameters to generate the Mandelbrot set.
-	//const width, height = 1000, 1000
 	img := image.NewRGBA(image.Rect(0, 0, widthInt, heightInt))
 	startTime := time.Now()
 	var wg sync.WaitGroup
@@ -139,7 +58,6 @@ func getMandelbrot(c *gin.Context) {
 				img.Set(px, py, makemandelbrot(z, iterationsInt))
 			}
 		}(py, y)
-
 	}
 	wg.Wait()
 	endTime := time.Now()
@@ -149,8 +67,6 @@ func getMandelbrot(c *gin.Context) {
 	}
 	png.Encode(f, img)
 	elapsedTime := endTime.Sub(startTime)
-	// Print the elapsed time to the console.
-	fmt.Println("Mandelbrot set generated in:", elapsedTime)
 	c.JSON(http.StatusOK, ImageResponse{
 		ImagePath: "mandelbrot.png",
 		Duration:  elapsedTime,
@@ -185,7 +101,6 @@ func makemandelbrot(z complex128, iterations int) color.Color {
 			// Use the number of iterations as an index into a color palette to
 			// determine the color to return.
 			return colorPalette[int(n)%len(colorPalette)]
-
 		}
 	}
 	return color.Black
