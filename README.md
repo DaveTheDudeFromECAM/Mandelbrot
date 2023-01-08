@@ -1,2 +1,2 @@
 # Mandelbrot
-Mandelbrot full stack implementation using Go &amp; Angular
+Mandelbrot full stack implementation using Go &amp; Streamlit
