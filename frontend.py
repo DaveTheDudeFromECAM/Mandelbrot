@@ -11,11 +11,11 @@ st.caption( '1. Open the sidebar menu using the arrow on the top left of the sec
 
 # sliders to adjust the parameters of the Mandelbrot set
 st.sidebar.title("Mandelbrot generation parameters")
-height = st.sidebar.slider("image height", 500, 5000, 1000, 10)
-width = st.sidebar.slider("image width", 500, 5000, 1000, 10)
+height = st.sidebar.slider("image height", 500, 5000, 500, 10)
+width = st.sidebar.slider("image width", 500, 5000, 500, 10)
 xmin, xmax = st.sidebar.slider('X-axix plot limits',  2.0, 2.0, (-2.0, 1.5))
 ymin, ymax = st.sidebar.slider('Y-axix plot limits', -2.0, 2.0, (-1.5, 1.5))
-iterations = st.sidebar.slider("Number of iterations", 50, 5000, 200, 1)
+iterations = st.sidebar.slider("Number of iterations", 50, 5000, 20, 1)
 
 def get_image():
     # request to backend
