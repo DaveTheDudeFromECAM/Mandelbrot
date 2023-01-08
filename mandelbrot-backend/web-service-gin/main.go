@@ -1,18 +1,21 @@
 package main
 
 import (
-	"net/http"
-
-	"github.com/gin-gonic/gin"
-
+	"fmt" //console log
 	"image"
 	"image/color"
 	"image/png"
 	"math/cmplx"
+	"net/http"
 	"os"
 	"sync"
+	"time" //Time taken to generate the set
+
+	//"math/rand"
+	"github.com/gin-gonic/gin"
 )
 
+/*
 type Pix struct {
 	x  int
 	y  int
@@ -63,6 +66,7 @@ var (
 	img        *image.RGBA
 	pixelCount int
 )
+*/
 
 // router
 func main() {
@@ -77,12 +81,12 @@ func main() {
 }
 
 func getMandelbrot(c *gin.Context) {
-	c.IndentedJSON(http.StatusOK, mandelbrot)
+	//c.IndentedJSON(http.StatusOK, mandelbrot)
 	const (
 		xmin, ymin, xmax, ymax = -2, -2, +2, +2
-		width, height          = 6000, 5000
+		width, height          = 1000, 1000
 	)
-
+	startTime := time.Now()
 	img := image.NewRGBA(image.Rect(0, 0, width, height))
 	var wg sync.WaitGroup
 	for py := 0; py < height; py++ {
@@ -99,11 +103,19 @@ func getMandelbrot(c *gin.Context) {
 		}(py, y)
 	}
 	wg.Wait()
+	endTime := time.Now()
 	f, err := os.Create("mandelbrot.png")
 	if err != nil {
 		panic(err)
 	}
 	png.Encode(f, img)
+	elapsedTime := endTime.Sub(startTime)
+	// Print the elapsed time to the console.
+	fmt.Println("Mandelbrot set generated in:", elapsedTime)
+	c.JSON(http.StatusOK, ImageResponse{
+		ImagePath: "mandelbrot.png",
+		Duration:  elapsedTime,
+	})
 }
 
 /*
@@ -124,8 +136,8 @@ func makemandelbrot(z complex128) color.Color {
 */
 
 func makemandelbrot(z complex128) color.Color {
-	const iterations = 50
-	const contrast = 15
+	const iterations = 15
+	const contrast = 255
 
 	var v complex128
 	for n := uint16(0); n < iterations; n++ {
@@ -151,4 +163,10 @@ var colorPalette = []color.Color{
 	color.RGBA{24, 82, 177, 255},   // Sky blue
 	color.RGBA{57, 125, 209, 255},  // Light sky blue
 	color.RGBA{134, 181, 229, 255}, // Very light blue
+}
+
+// ImageResponse represents the response to the /image endpoint.
+type ImageResponse struct {
+	ImagePath string        `json:"imagePath"`
+	Duration  time.Duration `json:"duration"`
 }
