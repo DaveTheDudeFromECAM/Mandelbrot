@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"image"
 	"image/color"
 	"image/png"
@@ -14,15 +15,60 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// Define the number of server instances.
+var numInstances = 3
+
+// Define the current server instance number.
+var currentInstance = 0
+
 // router
 func main() {
+
+	// Start the load balancer.
+	go loadBalancer(currentInstance, numInstances)
+
+	// Start the server instances.
+	// numInstances := 3
+	var wg sync.WaitGroup
+	for i := 0; i < numInstances; i++ {
+		wg.Add(1)
+		go startServer(i, &wg)
+	}
+	wg.Wait()
+}
+
+// loadBalancer listens for incoming requests and distributes them to the server instances.
+func loadBalancer(currentInstance int, numInstances int) {
+	// Set up a HTTP server to listen for incoming requests.
+	http.HandleFunc("/mandelbrot", func(w http.ResponseWriter, r *http.Request) {
+		// Get the next server instance to handle the request.
+		serverInstance := nextServerInstance()
+
+		// Forward the request to the server instance.
+		http.Redirect(w, r, fmt.Sprintf("http://localhost:%d/mandelbrot", serverInstance), http.StatusTemporaryRedirect)
+	})
+	http.ListenAndServe(":8000", nil)
+}
+
+// nextServerInstance returns the next server instance to handle a request
+func nextServerInstance() int {
+	// Increment the current instance number.
+	currentInstance = (currentInstance + 1) % numInstances
+
+	// Return the current instance number.
+	return currentInstance
+}
+
+// startServer starts a server instance.
+func startServer(instanceNum int, wg *sync.WaitGroup) {
+	defer wg.Done()
 	router := gin.Default()
 	router.GET("/mandelbrot", getMandelbrot)
-	router.Run("localhost:8001")
+	router.Run(fmt.Sprintf("localhost:%d", 8001+instanceNum))
+
 }
 
 func getMandelbrot(c *gin.Context) {
-
 	// parameters from the request
 	iterations := c.Query("iterations")
 	height := c.Query("height")
@@ -56,7 +102,7 @@ func getMandelbrot(c *gin.Context) {
 		go func(py int, y float64) {
 			defer wg.Done()
 
-			// each worker computes his row,pixel by pixel
+			// each worker computes his row, pixel by pixel
 			for px := 0; px < widthInt; px++ {
 				x := float64(px)/float64(widthInt)*(xmaxFloat-xminFloat) + xminFloat
 				z := complex(x, y)
@@ -67,7 +113,7 @@ func getMandelbrot(c *gin.Context) {
 		}(py, y)
 	}
 
-	// waint untill all routines are done
+	// waint until all routines are done
 	wg.Wait()
 	endTime := time.Now()
 	elapsedTime := endTime.Sub(startTime)
